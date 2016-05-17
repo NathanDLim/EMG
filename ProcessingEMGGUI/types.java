@@ -1,0 +1,6 @@
+enum TriggerType{
+  RISING_EDGE,
+  FALLING_EDGE,
+  ABOVE_THRESH,
+  BELOW_THRESH
+};
