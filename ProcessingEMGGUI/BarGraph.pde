@@ -7,8 +7,8 @@ class BarGraph{
   int barWidth;
   int size; //size of bar graph
   //Expecting a value between 0 and valMax;
-  int val,valMax; //current value and the max value
-  int threshold; //the value at which the trigger event takes place
+  float val,valMax; //current value and the max value
+  float threshold; //the value at which the trigger event takes place
   TriggerType tt; 
   boolean triggered; //bool to check if a trigger has happened
   
@@ -38,7 +38,7 @@ class BarGraph{
     this.tt = TriggerType.RISING_EDGE;
   }
   
-  void update(int v){
+  void update(float v){
     
     //determine the state of the trigger
     if(tt == TriggerType.RISING_EDGE){
@@ -64,32 +64,44 @@ class BarGraph{
   void draw(){
     stroke(0xff);
     //draw the bar graph axes
-    line(x+30,y,x+30,y-size-5);
+    line(x+50,y,x+50,y-size-5);
     line(x+25,y,x+size,y);
     
     //draw y axis ticks
-    text(valMax,x+2,y-size+4);
-    line(x+25,y-size,x+35,y-size);
-    text(valMax*3/4,x+2,y-size*3/4+4);
-    line(x+25,y-size*3/4,x+35,y-size*3/4);
-    text(valMax/2,x+2,y-size/2+4);
-    line(x+25,y-size/2,x+35,y-size/2);
-    text(valMax*1/4,x+2,y-size*1/4+4);
-    line(x+25,y-size*1/4,x+35,y-size*1/4);
+    text(nf(valMax,3,2), x+2, y-size+4);
+    line(x+45,y-size,x+55,y-size);
+    text(nf(valMax*3/4,3,2), x+2, y-size*3/4+4);
+    line(x+45,y-size*3/4,x+55,y-size*3/4);
+    text(nf(valMax/2,3,2), x+2, y-size/2+4);
+    line(x+45,y-size/2,x+55,y-size/2);
+    text(nf(valMax*1/4,3,2), x+2, y-size*1/4+4);
+    line(x+45,y-size*1/4, x+55, y-size*1/4);
     
     //draw the threshold line
-    int normThresh = int(map(threshold,0,valMax,0,size));
-    line(x+25,y-normThresh,x+size,y-normThresh);
-    text(threshold,x+size-10,y-normThresh-10);
+    float normThresh = map(threshold,0,valMax,0,size);
+    line(x+45,y-normThresh,x+size,y-normThresh);
+    text(nf(threshold,3,2),x+size-10,y-normThresh-10);
     
     //draw the bar
-    int normVal = int(map(val,0,valMax,0,size));
+    float normVal = map(val,0,valMax,0,size);
     rect(x+size/3,y,barWidth,-normVal);
-    text(val,x+size/3+20,y-normVal-10);
+    text(nf(val,3,2),x+size/3+20,y-normVal-10);
   }
   
-  int getVal(){
+  float getVal(){
     return val;
+  }
+  
+  float getThreshold(){
+    return threshold; 
+  }
+  
+  int getTT(){
+    return tt.ordinal(); 
+  }
+  
+  void setTT(TriggerType t){
+   tt = t; 
   }
   
   boolean insideGraph(int x1,int y1){
