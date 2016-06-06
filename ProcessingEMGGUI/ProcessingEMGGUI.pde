@@ -19,13 +19,39 @@ void setup(){
   size(1000,500); 
   
   //initialize the graphs
-  bg = new BarGraph(600,height-40, 200, 300,350,TriggerType.RISING_EDGE);
-  lg = new LineGraph(20,height-20,500,400,200,-90,90);
+  bg = new BarGraph(600,height-40, 200, 600,350,TriggerType.RISING_EDGE);
+  lg = new LineGraph(20,height-20,500,400,200,-90,600);
   
-  //open the serial port
-  println(myPort.list());
-  myPort = new Serial(this, myPort.list()[2], 9600); 
-  myPort.bufferUntil('\n'); 
+    //Choose the PORT
+  String COMlist="",COMx = "";
+  try {
+    int i = Serial.list().length;
+    if (i != 0) {
+      if (i >= 2) {
+        for (int j = 0; j < i;) {
+          COMlist += char(j+'a') + " = " + Serial.list()[j];
+          if (++j < i) COMlist += ",  ";
+        }
+        COMx = showInputDialog("Which COM port is correct? (a,b,..):\n"+COMlist);
+        if (COMx == null) exit();
+        if (COMx.isEmpty()) exit();
+        i = int(COMx.toLowerCase().charAt(0) - 'a') + 1;
+      }
+      String portName = Serial.list()[i-1];
+      myPort = new Serial(this, portName, 9600); 
+      myPort.bufferUntil('\n'); 
+    }
+    else {
+      showMessageDialog(frame,"Device is not connected to the PC");
+      exit();
+    }
+  }
+  catch (Exception e)
+  { //Print the type of error
+    showMessageDialog(frame,"COM port is not available (may\nbe in use by another program)");
+    println("Error:", e);
+    exit();
+  }
   
 }
 
@@ -62,7 +88,7 @@ void serialEvent (Serial myPort) {
    }
   }else if(inString.substring(0,6).equals("THRSH:")){
    int tt = int(inString.substring(6,7));
-   float tmpThrsh = float(inString.substring(7));
+   float tmpThrsh = float(inString.substring(8));
    if(abs(tmpThrsh - bg.getThreshold()) < 0.001){
      println("THRESHOLD SET CORRECTLY TO " + tmpThrsh);
    }
