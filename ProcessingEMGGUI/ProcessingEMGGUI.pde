@@ -11,16 +11,20 @@ import static javax.swing.JOptionPane.*;
 
 float bar;
 float line;
+float[] floatArray;
 BarGraph bg;
 LineGraph lg;
 Serial myPort;
+String s;
 
 void setup(){
   size(1000,500); 
   
+  s = "";
+  
   //initialize the graphs
-  bg = new BarGraph(600,height-40, 200, 600,350,TriggerType.RISING_EDGE);
-  lg = new LineGraph(20,height-20,500,400,200,-90,600);
+  bg = new BarGraph(600,height-40, 200, 1000,350,TriggerType.RISING_EDGE);
+  lg = new LineGraph(20,height-20,500,400,400,-90,600);
   
     //Choose the PORT
   String COMlist="",COMx = "";
@@ -53,6 +57,8 @@ void setup(){
     exit();
   }
   
+  
+  //frameRate(10);
 }
 
 void draw(){
@@ -61,50 +67,37 @@ void draw(){
   
 
   if(mousePressed){
-    if(bg.insideGraph(mouseX,mouseY))
-      bg.setThreshold(mouseY);
+   if(bg.insideGraph(mouseX,mouseY))
+     bg.setThreshold(mouseY);
   }
   
   lg.draw();
 }
 
-//void keyPressed() {
-//  if(key == 'w')
-//    x = bg.getVal() + 10;
-//  if(key == 's')
-//    x = bg.getVal()-10;
-//}
-
 void serialEvent (Serial myPort) {
-  String inString = myPort.readStringUntil('\n');
-  if(inString.substring(0,4).equals("RAW:")){
-   String[] split = split(inString, ' ');
-   //println(split.length);
-   if(split.length == 2){
-     if(split[0].substring(0,4).equals("RAW:"))
-       line = float(split[0].substring(4));
-     if(split[1].substring(0,4).equals("ENV:"))
-       bar = float(split[1].substring(4));
+ String inString = myPort.readStringUntil('\n');
+ if (inString != null) {
+   // Removes whitespace before and after string
+   inString = trim(inString);
+   // Parses the data on spaces, converts to floats, and puts each number into the array
+   floatArray = float(split(inString, " "));
+   // Make sure the array is at least 2 strings long.   
+   if (floatArray.length >= 2) {
+     // Assign the two numbers to variables so they can be drawn
+     line = floatArray[0];
+     bar = floatArray[1];
+     println(bar);
+     // You could do the drawing down here in the serialEvent, but it would be choppy
    }
-  }else if(inString.substring(0,6).equals("THRSH:")){
-   int tt = int(inString.substring(6,7));
-   float tmpThrsh = float(inString.substring(8));
-   if(abs(tmpThrsh - bg.getThreshold()) < 0.001){
-     println("THRESHOLD SET CORRECTLY TO " + tmpThrsh);
-   }
-  }
-
-  
-  lg.update(line);
-  bg.update(bar);
-  //Deal with triggers
-  if(bg.foundTrigger())
-    println("TRIGGERED");
+ } 
+ 
+ bg.update(bar);
+ lg.update(line);
 }
 
 void mouseReleased(){
   if(bg.insideGraph(mouseX,mouseY)){
-    myPort.write("THRSH:" + str(bg.getTT()) + ":" + str(bg.getThreshold()));
-    println("THRSH:" + str(bg.getTT()) + ":" + str(bg.getThreshold()));
+   myPort.write("THRSH:" + str(bg.getTT()) + ":" + str(bg.getThreshold()));
+   println("THRSH:" + str(bg.getTT()) + ":" + str(bg.getThreshold()));
   }
 }
